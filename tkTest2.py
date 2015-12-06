@@ -1,45 +1,90 @@
 from tkinter import *
+from collections import OrderedDict
 from math import *
 
 _width = 1200
 _height = 800
+cx = _width/2
+cy = _height/2
+root = Tk()
+dict = OrderedDict([("Classical", ["Rock", "Alternative", "Electronic", "Pop"]), ("Folk", ["Rock", "Rap", "Country"]), ("Rock", ["Rap", "Country", "Pop"]), ("Alternative", ["Country", "Pop"]), ("Pop", ["Rap", "Country"]), ("Electronic", []), ("Rap", []), ("Country", []) ])
+addressBook = []
+
 
 class Node:
-    _size = 50
-    def __init__(self, x, y, name):
-        offset = self._size/2
+    def __init__(self, x, y, name, size):
+        offset = size/2
         canvas.create_rectangle(x - offset, y - offset, x + offset, y + offset, fill="yellow")
         canvas_id = canvas.create_text(x, y)
         canvas.insert(canvas_id, 18, name)
 
+class Point:
+    _x = None
+    _y = None
+    def __init__(self, x, y):
+        self._x = x
+        self._y = y
 
+    def getNodeX(self):
+        return self._x
+    def getNodeY(self):
+        return self._y
+
+
+def drawEdges(i, endName):
+    startX = addressBook[i].getNodeX()
+    startY = addressBook[i].getNodeY()
+    print(startX, startY)
+    endIndex = list(dict.keys()).index(endName)
+    endX = addressBook[endIndex].getNodeX()
+    endY = addressBook[endIndex].getNodeY()
+    canvas.create_line(startX, startY, endX, endY, fill="red")
 
 def configure(event):
+    # Recalculate variables and clear canvas
     _width, _height = event.width, event.height
+    cx, cy = _width/2, _height/2
     canvas.delete("all")
+    addressBook = []
 
-    dict = {"Folk":["Rock","Rap"], "Rock":["Rap"], "Rap":[]}
-    
-    cx = _width/2
-    cy = _height/2
-    r = 100
-    a = (360/len(dict))* pi / 180
-    Node(_width/2, _height/2, "TEST")
+
+    # Go through dict and calculate the positions of each node
+    r = _height/6
+    a = (360/(len(dict)- 2.5))* pi / 180
     angle = 0
     for key, value in dict.items():
         x = cx + r * cos(angle)
         y = cy + r * sin(angle)
-        canvas.create_rectangle(x - 25, y - 25, x + 25, y + 25, fill="yellow")
-        canvas_id = canvas.create_text(x, y)
-        canvas.insert(canvas_id, 12, key)
-        #node = Node(x, y, key)
         angle = angle + a
+        r = 1.2 *r
+        addressBook.append(Point(x, y))
     
+    print(len(dict), len(addressBook))
+    print(dict.keys())
+    
+    # Go through the dict and draw all the edges and nodes
+    i = 0
     for key, value in dict.items():
-        print(value)
+        for j in range(0, len(value)):
+            if len(value) > 0:
+                print(i, j)
+                    #drawEdges(i, value[j])
+    
+                startX = addressBook[i].getNodeX()
+                startY = addressBook[i].getNodeY()
+                print(startX, startY)
+                endIndex = list(dict.keys()).index(value[j])
+                endX = addressBook[endIndex].getNodeX()
+                endY = addressBook[endIndex].getNodeY()
+                canvas.create_line(startX, startY, endX, endY, fill="red")
+
+    
+        influence = len(value) * 10
+        Node(addressBook[i].getNodeX(), addressBook[i].getNodeY(), key, 50 + influence)
+        i += 1
 
 
-root = Tk()
+#dict = {"Folk":["Rock","Rap"], "Rock":["Rap"], "Rap":[]}
 canvas = Canvas(root, width = _width, height = _height, bg="blue")
 canvas.pack(fill=BOTH, expand=YES)
 canvas.bind("<Configure>", configure)
